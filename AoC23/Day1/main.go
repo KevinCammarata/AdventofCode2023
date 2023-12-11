@@ -10,12 +10,63 @@ import (
 	"strings"
 )
 
-// func main() {
-// 	data := fetchTestData("/Users/kevincammarata/Documents/Code/AoC23/Day1/puzzle1input.dat")
+func main() {
+	filepath := "/Users/kevincammarata/Documents/Code/AoC23/Day1/puzzle1input.dat"
+	file, err := os.Open(filepath)
+	check(err)
+	// coordinates := make([]int, 0)
+	var total, totalWithText int
 
-// 	var result = processCalibrationData(data)
-// 	fmt.Print("result", result)
-// }
+	fileScanner := bufio.NewScanner(file)
+	fileScanner.Split(bufio.ScanLines)
+
+	for fileScanner.Scan() {
+		// fileLines = append(fileLines, fileScanner.Text())
+		num := processCalibrationDataDigitsOnly(fileScanner.Text())
+		numWithText := processCalibrationData(fileScanner.Text())
+		// coordinates = append(coordinates, num)
+		total += num
+		totalWithText += numWithText
+	}
+
+	file.Close()
+
+	fmt.Printf("result %d \n", total)
+	fmt.Printf("result with text %v \n", totalWithText)
+}
+
+func processCalibrationDataDigitsOnly(rawData string) int {
+	// fmt.Printf("Input to processCalibrationDataDigitsOnly %s", rawData)
+	var sum, firstPos, secondPos int
+	var firstDigit, secondDigit string
+	firstPos = len(rawData)
+
+	for i := 1; i < 10; i++ {
+		iterAsString := strconv.Itoa(i)
+		firstNumIndex := strings.Index(rawData, iterAsString)
+		lastNumIndex := strings.LastIndex(rawData, iterAsString)
+
+		if firstNumIndex > -1 && firstNumIndex < firstPos {
+			firstDigit = iterAsString
+			firstPos = firstNumIndex
+		}
+
+		if lastNumIndex >= secondPos {
+			secondDigit = iterAsString
+			secondPos = lastNumIndex
+		}
+	}
+
+	newNum := firstDigit + secondDigit
+	var err error
+	sum, err = strconv.Atoi(newNum)
+	if err != nil {
+		fmt.Sprintf("Could not convert %s to an int", newNum)
+		panic(err)
+	}
+
+	return sum
+}
 
 func processCalibrationData(rawData string) int {
 	var sum, firstPos, secondPos int
@@ -42,7 +93,7 @@ func processCalibrationData(rawData string) int {
 			secondDigit = iterAsString
 			secondPos = lastIndex
 		}
-		if lastNumIndex > secondPos {
+		if lastNumIndex >= secondPos {
 			secondDigit = iterAsString
 			secondPos = lastNumIndex
 		}
@@ -59,11 +110,11 @@ func processCalibrationData(rawData string) int {
 	return sum
 }
 
-func fetchTestData(filepath string) []string {
+func fetchTestData(filepath string) int {
 
 	file, err := os.Open(filepath)
 	check(err)
-	fileLines := make([]string, 1001)
+	fileLines := make([]string, 1000)
 
 	fileScanner := bufio.NewScanner(file)
 	fileScanner.Split(bufio.ScanLines)
@@ -74,11 +125,16 @@ func fetchTestData(filepath string) []string {
 
 	file.Close()
 
-	// for _, line := range fileLines {
-	//     fmt.Println(line)
-	// }
+	coordinates := make([]int, 1000)
+	var total int
 
-	return fileLines
+	for i := 1; i < 1000; i++ {
+		num := processCalibrationDataDigitsOnly(fileLines[i])
+		coordinates = append(coordinates, num)
+		total = total + num
+	}
+
+	return total
 }
 
 func fetchTestDataFromWeb(url string) string {
